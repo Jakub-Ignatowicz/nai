@@ -15,7 +15,12 @@ type Flower struct {
 	measurements []float32
 }
 
-func (f1 *Flower) Distance(f2 *Flower) float32 {
+type FlowerDistance struct {
+	flower   Flower
+	distance float32
+}
+
+func (f1 Flower) Distance(f2 Flower) FlowerDistance {
 	var maxLenght int
 	if len(f1.measurements) > len(f2.measurements) {
 		maxLenght = len(f1.measurements)
@@ -38,22 +43,30 @@ func (f1 *Flower) Distance(f2 *Flower) float32 {
 		distance += math.Pow(float64(diff), 2)
 	}
 
-	return float32(math.Sqrt(distance))
+	return FlowerDistance{
+		flower:   f2,
+		distance: float32(math.Sqrt(distance)),
+	}
 }
 
 func main() {
-	flowers, err := flowerDataReader("./data/iris_training.txt")
+	flowers, err := flowerReader("./data/iris_training.txt")
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	flower := Flower{
+		name:         "a",
+		measurements: []float32{5.4, 3.7, 1.5, 0.2},
+	}
+
 	for _, v := range flowers {
-		fmt.Println(v)
+		fmt.Println(v.Distance(flower))
 	}
 }
 
-func flowerDataReader(fileName string) ([]Flower, error) {
+func flowerReader(fileName string) ([]Flower, error) {
 	file, err := os.Open(fileName)
 
 	if err != nil {
