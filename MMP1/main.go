@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -50,20 +51,13 @@ func (f1 Flower) Distance(f2 Flower) FlowerDistance {
 }
 
 func main() {
-	flowers, err := flowerReader("./data/iris_training.txt")
-
-	if err != nil {
-		fmt.Println(err)
+	for k := 0; k < 120; k += 5 {
+		err := testFlower("./data/iris_training.txt", "./data/iris_test.txt", k)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
-	flower := Flower{
-		name:         "a",
-		measurements: []float32{5.4, 3.7, 1.5, 0.2},
-	}
-
-	for _, v := range flowers {
-		fmt.Println(v.Distance(flower))
-	}
 }
 
 func flowerReader(fileName string) ([]Flower, error) {
@@ -108,4 +102,68 @@ func flowerReader(fileName string) ([]Flower, error) {
 	}
 
 	return flowers, nil
+}
+
+func testFlower(trainingFileName string, testFileName string, k int) error {
+	trainFlowers, e1 := flowerReader(trainingFileName)
+	if e1 != nil {
+		return e1
+	}
+	if k > len(trainFlowers) || k < 1 {
+		return errors.New("k must be greater than 0 and smaller than training dataset size")
+	}
+	testFlowers, e2 := flowerReader(testFileName)
+	if e2 != nil {
+		return e2
+	}
+
+	testCount := float64(len(testFlowers))
+	correctCount := 0.0
+
+	for _, testFlower := range testFlowers {
+		var flowerDistances []FlowerDistance
+		for _, trainFlower := range trainFlowers {
+			flowerDistances = append(flowerDistances, testFlower.Distance(trainFlower))
+		}
+
+		sort.Slice(flowerDistances, func(i, j int) bool {
+			return flowerDistances[i].distance < flowerDistances[j].distance
+		})
+
+		namesCount := make(map[string]int)
+
+		for i := 0; i < k; i++ {
+			currName := flowerDistances[i].flower.name
+			value, exists := namesCount[currName]
+			if exists {
+				namesCount[currName] = value + 1
+			} else {
+				namesCount[currName] = 1
+			}
+		}
+
+		predictedFlower := maxKeyInMap(namesCount)
+
+		if predictedFlower == testFlower.name {
+			correctCount++
+		}
+	}
+	percentage := (correctCount / testCount) * 100
+
+	fmt.Println(k)
+	fmt.Printf("Prediction was correct %.1f%% of the time\n", percentage)
+	return nil
+}
+
+func maxKeyInMap(m map[string]int) string {
+	maxKey := ""
+	maxValue := math.MinInt
+
+	for key, value := range m {
+		if value > maxValue {
+			maxValue = value
+			maxKey = key
+		}
+	}
+	return maxKey
 }
