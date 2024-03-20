@@ -51,13 +51,98 @@ func (f1 Flower) Distance(f2 Flower) FlowerDistance {
 }
 
 func main() {
-	for k := 0; k < 120; k += 5 {
-		err := testFlower("./data/iris_training.txt", "./data/iris_test.txt", k)
-		if err != nil {
-			fmt.Println(err)
+	var trainingPath string
+	var testPath string
+
+	fmt.Print("Provide path for training data(input \"default\" if you want to use default dir): ")
+	fmt.Scan(&trainingPath)
+	if trainingPath == "default" {
+		trainingPath = "./data/iris_training.txt"
+	}
+	var trainingFlowers []Flower
+	var err error
+
+	trainingFlowers, err = flowerReader(trainingPath)
+
+	for err != nil {
+		fmt.Print("Incorrect path, try again. If you want to quit type \"quit\": ")
+		fmt.Scan(&trainingPath)
+		switch trainingPath {
+		case "quit":
+			return
+		case "default":
+			trainingPath = "./data/iris_training.txt"
+			trainingFlowers, err = flowerReader(trainingPath)
+		default:
+			trainingFlowers, err = flowerReader(trainingPath)
 		}
 	}
 
+	fmt.Print("Provide path for test data(input \"default\" if you want to use default dir): ")
+	fmt.Scan(&testPath)
+	if testPath == "default" {
+		testPath = "./data/iris_test.txt"
+	}
+	var testFlowers []Flower
+
+	testFlowers, err = flowerReader(testPath)
+
+	for err != nil {
+		fmt.Print("Incorrect path, try again. If you want to quit type \"quit\": ")
+		fmt.Scan(&testPath)
+		switch testPath {
+		case "quit":
+			return
+		case "default":
+			testPath = "./data/iris_test.txt"
+			testFlowers, err = flowerReader(testPath)
+		default:
+			testFlowers, err = flowerReader(testPath)
+		}
+	}
+
+	var kString string
+	numberOfFlowers := len(trainingFlowers)
+	formattedString := fmt.Sprintf("Provide number between 1 and %d for the number of closest neighbors tested: ", numberOfFlowers)
+	fmt.Print(formattedString)
+	fmt.Scan(&kString)
+	if kString == "quit" {
+		return
+	}
+
+	var k int
+	k, err = strconv.Atoi(kString)
+
+	for err != nil || k < 1 || k > numberOfFlowers {
+		formattedString = fmt.Sprintf("Incorrect k, please provide whole number between 1 and %d(type \"quit\" if you want to stop a program): ", numberOfFlowers)
+		fmt.Print(formattedString)
+		fmt.Scan(&kString)
+		if kString == "quit" {
+			return
+		}
+		k, err = strconv.Atoi(kString)
+	}
+
+	err = predictFlowers(trainingFlowers, testFlowers, k)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println()
+	fmt.Println("Here is set of commands you can use:")
+	fmt.Println(" help - print all possible commands again")
+	fmt.Println(" setTraining - lets you change path to training data")
+	fmt.Println(" setTest - lets you change path to test data")
+	fmt.Println(" testFlower - lets you input flower for testing")
+	fmt.Println(" quit - leaves the program")
+
+	var command string
+
+	for true {
+
+		fmt.Print("> ")
+		fmt.Scan(&command)
+	}
 }
 
 func flowerReader(fileName string) ([]Flower, error) {
@@ -104,17 +189,9 @@ func flowerReader(fileName string) ([]Flower, error) {
 	return flowers, nil
 }
 
-func testFlower(trainingFileName string, testFileName string, k int) error {
-	trainFlowers, e1 := flowerReader(trainingFileName)
-	if e1 != nil {
-		return e1
-	}
+func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
 	if k > len(trainFlowers) || k < 1 {
 		return errors.New("k must be greater than 0 and smaller than training dataset size")
-	}
-	testFlowers, e2 := flowerReader(testFileName)
-	if e2 != nil {
-		return e2
 	}
 
 	testCount := float64(len(testFlowers))
@@ -150,8 +227,7 @@ func testFlower(trainingFileName string, testFileName string, k int) error {
 	}
 	percentage := (correctCount / testCount) * 100
 
-	fmt.Println(k)
-	fmt.Printf("Prediction was correct %.1f%% of the time\n", percentage)
+	fmt.Printf("For provided datasets prediction was correct %.1f%% of the time\n", percentage)
 	return nil
 }
 
