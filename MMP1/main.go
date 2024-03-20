@@ -294,9 +294,11 @@ func predictFlower(trainFlowers []Flower, testFlower Flower, k int) (bool, error
 	}
 
 	sort.Slice(flowerDistances, func(i, j int) bool {
-		return flowerDistances[i].distance < flowerDistances[j].distance
+		if flowerDistances[i].distance == flowerDistances[j].distance {
+			return flowerDistances[i].flower.name < flowerDistances[j].flower.name // Sort by name if distances are equal
+		}
+		return flowerDistances[i].distance < flowerDistances[j].distance // Sort by distance as before
 	})
-
 	namesCount := make(map[string]int)
 
 	for i := 0; i < k; i++ {
@@ -336,7 +338,6 @@ func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
 	fmt.Printf("For provided datasets prediction was correct %.1f%% of the time\n", percentage)
 	return nil
 }
-
 func maxKeyInMap(m map[string]int) string {
 	maxKey := ""
 	maxValue := math.MinInt
@@ -344,6 +345,8 @@ func maxKeyInMap(m map[string]int) string {
 	for key, value := range m {
 		if value > maxValue {
 			maxValue = value
+			maxKey = key
+		} else if value == maxValue && key > maxKey {
 			maxKey = key
 		}
 	}
