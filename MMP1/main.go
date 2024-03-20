@@ -133,7 +133,9 @@ func main() {
 	fmt.Println(" help - print all possible commands again")
 	fmt.Println(" setTraining - lets you change path to training data")
 	fmt.Println(" setTest - lets you change path to test data")
+	fmt.Println(" setK - lets you change k neighbors tested")
 	fmt.Println(" testFlower - lets you input flower for testing")
+	fmt.Println(" testFlowers - test your test set on training set")
 	fmt.Println(" quit - leaves the program")
 
 	var command string
@@ -142,6 +144,98 @@ func main() {
 
 		fmt.Print("> ")
 		fmt.Scan(&command)
+		switch command {
+		case "quit":
+			return
+		case "help":
+			fmt.Println("Here is set of commands you can use:")
+			fmt.Println(" help - print all possible commands again")
+			fmt.Println(" setTraining - lets you change path to training data")
+			fmt.Println(" setTest - lets you change path to test data")
+			fmt.Println(" setK - lets you change k neighbors tested")
+			fmt.Println(" testFlower - lets you input flower for testing")
+			fmt.Println(" testFlowers - test your test set on training set")
+			fmt.Println(" quit - leaves the program")
+		case "setTraining":
+			fmt.Print("Provide path or type \"default\": ")
+			fmt.Scan(&trainingPath)
+			if trainingPath == "default" {
+				trainingPath = "./data/iris_training.txt"
+			}
+			trainingFlowers, err = flowerReader(trainingPath)
+			if err != nil {
+				fmt.Println("Couldn't read this path, try again")
+				err = nil
+			} else {
+				fmt.Println("Read flowers from " + trainingPath)
+			}
+		case "setTest":
+			fmt.Print("Provide path or type \"default\": ")
+			fmt.Scan(&testPath)
+			if testPath == "default" {
+				testPath = "./data/iris_test.txt"
+			}
+			testFlowers, err = flowerReader(testPath)
+			if err != nil {
+				fmt.Println("Couldn't read this path, try again")
+				err = nil
+			} else {
+				fmt.Println("Read flowers from " + testPath)
+			}
+		case "testFlower":
+			var flowerString string
+			fmt.Print("Type vector with white chars between dimentions and type of flower at the end: ")
+			reader := bufio.NewReader(os.Stdin)
+			flowerString, _ = reader.ReadString('\n')
+			flowerData := strings.Fields(flowerString)
+			if len(flowerData) < 2 {
+				fmt.Println("Incorrect size of input, every input has to have at least 1D vector and flower type")
+				break
+			}
+			name := flowerData[len(flowerData)-1]
+			measurementsStrings := flowerData[0 : len(flowerData)-1]
+
+			var measurements []float32
+
+			for _, value := range measurementsStrings {
+				measurementFloat, err := strconv.ParseFloat(strings.ReplaceAll(value, ",", "."), 32)
+				if err != nil {
+					fmt.Println("Unable to parse " + value + " to float")
+					break
+				}
+				measurements = append(measurements, float32(measurementFloat))
+			}
+
+			flower := Flower{
+				name:         name,
+				measurements: measurements,
+			}
+			predFlower, err := predictFlower(trainingFlowers, flower, k)
+			if err != nil {
+				fmt.Println("Error why predicting flower: " + err.Error())
+			}
+
+			if predFlower {
+				fmt.Println("System predicted your flower")
+			} else {
+				fmt.Println("System didn't predict your flower")
+			}
+		case "testFlowers":
+			predictFlowers(trainingFlowers, testFlowers, k)
+		case "setK":
+			fmt.Print("Provide k: ")
+			fmt.Scan(&kString)
+			k, err = strconv.Atoi(kString)
+			if err != nil || k > len(trainingFlowers) || k < 1 {
+				formattedString = fmt.Sprintf("Incorrect k, please try again and provide whole number between 1 and %d", numberOfFlowers)
+				fmt.Println(formattedString)
+				err = nil
+			} else {
+				fmt.Println("New k has been set")
+			}
+		default:
+			fmt.Println("Incorrect command, try again(for list of command type \"help\")")
+		}
 	}
 }
 
