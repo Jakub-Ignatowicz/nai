@@ -189,6 +189,37 @@ func flowerReader(fileName string) ([]Flower, error) {
 	return flowers, nil
 }
 
+func predictFlower(trainFlowers []Flower, testFlower Flower, k int) (bool, error) {
+	if k > len(trainFlowers) || k < 1 {
+		return false, errors.New("k must be greater than 0 and smaller than training dataset size")
+	}
+
+	var flowerDistances []FlowerDistance
+	for _, trainFlower := range trainFlowers {
+		flowerDistances = append(flowerDistances, testFlower.Distance(trainFlower))
+	}
+
+	sort.Slice(flowerDistances, func(i, j int) bool {
+		return flowerDistances[i].distance < flowerDistances[j].distance
+	})
+
+	namesCount := make(map[string]int)
+
+	for i := 0; i < k; i++ {
+		currName := flowerDistances[i].flower.name
+		value, exists := namesCount[currName]
+		if exists {
+			namesCount[currName] = value + 1
+		} else {
+			namesCount[currName] = 1
+		}
+	}
+
+	predictedFlower := maxKeyInMap(namesCount)
+
+	return predictedFlower == testFlower.name, nil
+}
+
 func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
 	if k > len(trainFlowers) || k < 1 {
 		return errors.New("k must be greater than 0 and smaller than training dataset size")
@@ -198,30 +229,11 @@ func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
 	correctCount := 0.0
 
 	for _, testFlower := range testFlowers {
-		var flowerDistances []FlowerDistance
-		for _, trainFlower := range trainFlowers {
-			flowerDistances = append(flowerDistances, testFlower.Distance(trainFlower))
+		correctPred, err := predictFlower(trainFlowers, testFlower, k)
+		if err != nil {
+			return err
 		}
-
-		sort.Slice(flowerDistances, func(i, j int) bool {
-			return flowerDistances[i].distance < flowerDistances[j].distance
-		})
-
-		namesCount := make(map[string]int)
-
-		for i := 0; i < k; i++ {
-			currName := flowerDistances[i].flower.name
-			value, exists := namesCount[currName]
-			if exists {
-				namesCount[currName] = value + 1
-			} else {
-				namesCount[currName] = 1
-			}
-		}
-
-		predictedFlower := maxKeyInMap(namesCount)
-
-		if predictedFlower == testFlower.name {
+		if correctPred {
 			correctCount++
 		}
 	}
