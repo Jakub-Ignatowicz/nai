@@ -124,6 +124,7 @@ func main() {
 	}
 
 	err = predictFlowers(trainingFlowers, testFlowers, k)
+
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -215,7 +216,8 @@ func main() {
 				fmt.Println("Error why predicting flower: " + err.Error())
 			}
 
-			if predFlower {
+			fmt.Println("Predicted flower: " + predFlower)
+			if predFlower == flower.name {
 				fmt.Println("System predicted your flower")
 			} else {
 				fmt.Println("System didn't predict your flower")
@@ -283,9 +285,9 @@ func flowerReader(fileName string) ([]Flower, error) {
 	return flowers, nil
 }
 
-func predictFlower(trainFlowers []Flower, testFlower Flower, k int) (bool, error) {
+func predictFlower(trainFlowers []Flower, testFlower Flower, k int) (string, error) {
 	if k > len(trainFlowers) || k < 1 {
-		return false, errors.New("k must be greater than 0 and smaller than training dataset size")
+		return "", errors.New("k must be greater than 0 and smaller than training dataset size")
 	}
 
 	var flowerDistances []FlowerDistance
@@ -312,8 +314,9 @@ func predictFlower(trainFlowers []Flower, testFlower Flower, k int) (bool, error
 	}
 
 	predictedFlower := maxKeyInMap(namesCount)
+	fmt.Println(predictedFlower)
 
-	return predictedFlower == testFlower.name, nil
+	return predictedFlower, nil
 }
 
 func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
@@ -329,7 +332,7 @@ func predictFlowers(trainFlowers []Flower, testFlowers []Flower, k int) error {
 		if err != nil {
 			return err
 		}
-		if correctPred {
+		if correctPred == testFlower.name {
 			correctCount++
 		}
 	}
@@ -346,7 +349,7 @@ func maxKeyInMap(m map[string]int) string {
 		if value > maxValue {
 			maxValue = value
 			maxKey = key
-		} else if value == maxValue && key > maxKey {
+		} else if value == maxValue && key < maxKey {
 			maxKey = key
 		}
 	}
