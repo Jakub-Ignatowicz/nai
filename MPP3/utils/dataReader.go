@@ -9,8 +9,14 @@ import (
 	"strings"
 )
 
-func DataReader(dirName string) (map[string]string, error) {
-	files := make(map[string]string)
+type File struct {
+	Language       string
+	Text           string
+	CharProportion map[rune]float64
+}
+
+func DataReader(dirName string) ([]File, error) {
+	files := make([]File, 0)
 	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -30,7 +36,13 @@ func DataReader(dirName string) (map[string]string, error) {
 				return errors.New("Unable to get dir name")
 			}
 
-			files[string(fileData)] = parentDir
+			newFile := File{
+				Language:       parentDir,
+				Text:           string(fileData),
+				CharProportion: countAllLetters(string(fileData)),
+			}
+
+			files = append(files, newFile)
 
 			fmt.Println("File:", path)
 			fmt.Println(string(fileData))
@@ -43,4 +55,16 @@ func DataReader(dirName string) (map[string]string, error) {
 	}
 
 	return files, nil
+}
+
+func countAllLetters(text string) map[rune]float64 {
+	letterCounts := make(map[rune]float64)
+
+	for _, char := range strings.ToLower(text) {
+		if 'a' <= char && char <= 'z' {
+			letterCounts[char]++
+		}
+	}
+
+	return letterCounts
 }
