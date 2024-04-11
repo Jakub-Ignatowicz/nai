@@ -12,7 +12,7 @@ import (
 type File struct {
 	Language       string
 	Text           string
-	CharProportion map[rune]float64
+	CharProportion []float64
 }
 
 func DataReader(dirName string) ([]File, error) {
@@ -57,14 +57,15 @@ func DataReader(dirName string) ([]File, error) {
 	return files, nil
 }
 
-func countAllLetters(text string) map[rune]float64 {
-	letterCounts := make(map[rune]float64)
+func countAllLetters(text string) []float64 {
+	letterProportions := make([]float64, 26)
+	letterProportions[25] = -1
 
 	for _, char := range strings.ToLower(text) {
 		if 'a' <= char && char <= 'z' {
-			letterCounts[char]++
+			letterProportions['a'-char]++
 		}
 	}
 
-	return letterCounts
+	return letterProportions
 }
