@@ -38,7 +38,7 @@ func DataReader(dirName string) ([]File, error) {
 			newFile := File{
 				Language:         parentDir,
 				Text:             string(fileData),
-				ProportionVector: countAllLetters(string(fileData)),
+				ProportionVector: Normalize(countAllLetters(string(fileData))),
 			}
 
 			files = append(files, newFile)
