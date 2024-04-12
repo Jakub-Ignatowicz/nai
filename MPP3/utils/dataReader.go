@@ -9,9 +9,9 @@ import (
 )
 
 type File struct {
-	Language       string
-	Text           string
-	CharProportion []float64
+	Language         string
+	Text             string
+	ProportionVector []float64
 }
 
 func DataReader(dirName string) ([]File, error) {
@@ -36,9 +36,9 @@ func DataReader(dirName string) ([]File, error) {
 			}
 
 			newFile := File{
-				Language:       parentDir,
-				Text:           string(fileData),
-				CharProportion: countAllLetters(string(fileData)),
+				Language:         parentDir,
+				Text:             string(fileData),
+				ProportionVector: countAllLetters(string(fileData)),
 			}
 
 			files = append(files, newFile)
