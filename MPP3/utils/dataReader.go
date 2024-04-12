@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -44,8 +43,6 @@ func DataReader(dirName string) ([]File, error) {
 
 			files = append(files, newFile)
 
-			fmt.Println("File:", path)
-			fmt.Println(string(fileData))
 		}
 		return nil
 	})
@@ -60,11 +57,17 @@ func DataReader(dirName string) ([]File, error) {
 func countAllLetters(text string) []float64 {
 	letterProportions := make([]float64, 26)
 	letterProportions[25] = -1
+	len := 0
 
 	for _, char := range strings.ToLower(text) {
 		if 'a' <= char && char <= 'z' {
-			letterProportions['a'-char]++
+			letterProportions[char-'a']++
+			len++
 		}
+	}
+
+	for i, count := range letterProportions {
+		letterProportions[i] = count / float64(len)
 	}
 
 	return letterProportions
