@@ -38,7 +38,7 @@ func DataReader(dirName string) ([]File, error) {
 			newFile := File{
 				Language:         parentDir,
 				Text:             string(fileData),
-				ProportionVector: Normalize(countAllLetters(string(fileData))),
+				ProportionVector: Normalize(CountAllLetters(string(fileData))),
 			}
 
 			files = append(files, newFile)
@@ -54,7 +54,7 @@ func DataReader(dirName string) ([]File, error) {
 	return files, nil
 }
 
-func countAllLetters(text string) []float64 {
+func CountAllLetters(text string) []float64 {
 	letterProportions := make([]float64, 26)
 	letterProportions[25] = -1
 	len := 0
