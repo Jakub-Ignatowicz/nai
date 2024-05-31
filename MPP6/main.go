@@ -37,6 +37,25 @@ func createInitialPriorityQueue(sentence string) utils.PriorityQueue {
 
 func main() {
 	str := "hakuma tata ma"
+
+	huffmanEncoding(str)
+
+	str = "ala ma kota a kot ma ale"
+
+	huffmanEncoding(str)
+
+	str = "hello world"
+
+	huffmanEncoding(str)
+
+	str = "ashdfsdfh ,basmndfbas,ndfbamsfmnbs,fwaefhyuiyabwefauydsvcuysdvbdsaucisadc"
+
+	huffmanEncoding(str)
+}
+
+func huffmanEncoding(str string) {
+	fmt.Println(fmt.Sprintf("Starting string: %s", str))
+
 	pq := createInitialPriorityQueue(str)
 
 	bitSizeOfChar := 1
@@ -45,7 +64,9 @@ func main() {
 		bitSizeOfChar++
 	}
 
-	result := fmt.Sprintf("Total bit length of not encoded string is: %d", bitSizeOfChar*len(str))
+	preencodedSize := bitSizeOfChar * len(str)
+
+	result := fmt.Sprintf("Total bit length of not encoded string is: %d", preencodedSize)
 
 	fmt.Println(result)
 
@@ -73,4 +94,24 @@ func main() {
 			encodedChars[string(char)] = "1" + encodedChars[string(char)]
 		}
 	}
+
+	fmt.Println()
+	for key, value := range encodedChars {
+		fmt.Printf("Char: %s, Encoded: %s\n", key, value)
+	}
+	fmt.Println()
+
+	lenghtAfterEncoding := 0
+
+	pq2 := createInitialPriorityQueue(str)
+
+	for pq2.Len() > 0 {
+		item := heap.Pop(&pq2).(utils.Item)
+		lenghtAfterEncoding += len(encodedChars[item.Name]) * item.Weight
+	}
+
+	result2 := fmt.Sprintf("After encoding we got %d bits in this string so we saved %d bits", lenghtAfterEncoding, preencodedSize-lenghtAfterEncoding)
+
+	fmt.Println(result2)
+	fmt.Println()
 }
