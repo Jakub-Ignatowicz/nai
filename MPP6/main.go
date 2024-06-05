@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"container/heap"
 	"fmt"
 	"math"
 	"mpp6/utils"
+	"os"
+	"sort"
+	"strings"
 )
 
 func countLetters(sentence string) map[rune]int {
@@ -36,24 +40,28 @@ func createInitialPriorityQueue(sentence string) utils.PriorityQueue {
 }
 
 func main() {
-	str := "hakuma tata ma"
+	reader := bufio.NewReader(os.Stdin)
 
-	huffmanEncoding(str)
+	for {
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			fmt.Println("Error reading input:", err)
+			return
+		}
 
-	str = "ala ma kota a kot ma ale"
-
-	huffmanEncoding(str)
-
-	str = "hello world"
-
-	huffmanEncoding(str)
-
-	str = "ashdfsdfh ,basmndfbas,ndfbamsfmnbs,fwaefhyuiyabwefauydsvcuysdvbdsaucisadc"
-
-	huffmanEncoding(str)
+		if input != "q" {
+			huffmanEncoding(input)
+		} else {
+			return
+		}
+	}
 }
 
 func huffmanEncoding(str string) {
+	str = strings.ReplaceAll(str, "\n", "")
 	fmt.Println(fmt.Sprintf("Starting string: %s", str))
 
 	pq := createInitialPriorityQueue(str)
@@ -96,9 +104,17 @@ func huffmanEncoding(str string) {
 	}
 
 	fmt.Println()
-	for key, value := range encodedChars {
-		fmt.Printf("Char: %s, Encoded: %s\n", key, value)
+	keys := make([]string, 0, len(encodedChars))
+	for key := range encodedChars {
+		keys = append(keys, key)
 	}
+
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		fmt.Printf("Char: %s, Encoded: %s\n", key, encodedChars[string(key)])
+	}
+
 	fmt.Println()
 
 	lenghtAfterEncoding := 0
@@ -110,8 +126,17 @@ func huffmanEncoding(str string) {
 		lenghtAfterEncoding += len(encodedChars[item.Name]) * item.Weight
 	}
 
-	result2 := fmt.Sprintf("After encoding we got %d bits in this string so we saved %d bits", lenghtAfterEncoding, preencodedSize-lenghtAfterEncoding)
+	encodedString := ""
 
-	fmt.Println(result2)
+	for _, char := range str {
+		encodedString = encodedString + encodedChars[string(char)]
+	}
+
+	fmt.Println("Encoded string: " + encodedString)
+	fmt.Println()
+
+	result3 := fmt.Sprintf("After encoding we got %d bits in this string so we saved %d bits", lenghtAfterEncoding, preencodedSize-lenghtAfterEncoding)
+
+	fmt.Println(result3)
 	fmt.Println()
 }
